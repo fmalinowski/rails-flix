@@ -48,14 +48,24 @@ describe "A User" do
     expect(user.errors.full_messages).to eq(expected_errors)
   end
 
+  it "needs a password at least 10 caracters long" do
+    user_1 = User.new(:name => "Some name", :email => "me@email.com", :password => "password1")
+    expect(user_1.valid?).to be_false
+    expected_errors = ["Password is too short (minimum is 10 characters)"]
+    expect(user_1.errors.full_messages).to eq(expected_errors)
+
+    user_2 = User.new(:name => "Some name", :email => "me@email.com", :password => "password12")
+    expect(user_2.valid?).to be_true
+  end
+
   it "must have the same element in password and password confirmation" do
-    user = User.new(:name => "Some name", :email => "me@email.com", :password => "password1",
-                      :password_confirmation => "password2")
+    user = User.new(:name => "Some name", :email => "me@email.com", :password => "password11",
+                      :password_confirmation => "password22")
     expect(user.valid?).to be_false
     expected_errors = ["Password confirmation doesn't match Password"]
     expect(user.errors.full_messages).to eq(expected_errors)
 
-    user.password_confirmation = "password1"
+    user.password_confirmation = "password11"
     expect(user.valid?).to be_true
   end
 
@@ -67,4 +77,13 @@ describe "A User" do
     expect(user.password_digest).not_to be_nil
   end
 
+  it "can modify the other attributes and leaves the password empty" do
+    user = User.create!(:name => "Some name", :email => "me@email.com", :password => "my_password", :password_confirmation => "my_password")
+
+    user.name = "Modified name"
+    user.password =""
+
+    expect(user.valid?).to be_true
+    user.save!
+  end
 end
